@@ -25,13 +25,15 @@ def test_dynamic_script(page: Page):
 def test_child_window(page: Page):
     page.goto("https://rahulshettyacademy.com/loginpagePractise/")
 
+    # handling Child Window
     with page.expect_popup() as newPage:
         page.get_by_text("Free Access to Inter").click() #trigger new page
-        child_page = newPage.value
 
-        page_title = child_page.locator(".page-title").text_content()
-        print(page_title)
+        child_page = newPage.value
+        child_page.locator(".page-title").text_content()
         expect(child_page.get_by_text("Documents request")).to_be_visible()
 
         email_text = child_page.locator(".red").text_content()
-        print(email_text)
+        words = email_text.split(" at ")
+        email = words[1].split(" with ")[0] # .strip() can be used to remove all blank spaces
+        assert email == "mentor@rahulshettyacademy.com"
