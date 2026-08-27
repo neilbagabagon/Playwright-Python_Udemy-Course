@@ -21,8 +21,7 @@ def test_web_api(playwright: Playwright, user_credential):
     api_utils = APIUtils()
     existing_orders = api_utils.get_existing_orders(
         playwright,
-        user_credential["userEmail"],
-        user_credential["password"],
+        user_credential,
         limit=2
     )
 
