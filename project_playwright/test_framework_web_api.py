@@ -3,6 +3,8 @@ import json
 import pytest
 from playwright.sync_api import Playwright, expect
 
+from project_playwright.pageObjects.dashboard import DashboardPage
+from project_playwright.pageObjects.login import LoginPage
 from utils.apiBase import APIUtils
 
 # JSON file -> util -> access to test
@@ -16,6 +18,9 @@ def test_web_api(playwright: Playwright, user_credential):
     browser = playwright.chromium.launch(headless=False)
     context = browser.new_context()
     page = context.new_page()
+
+    userName = user_credential["userEmail"]
+    userPassword = user_credential["password"]
 
     # Fetch existing orders dynamically for this user
     api_utils = APIUtils()
@@ -33,17 +38,15 @@ def test_web_api(playwright: Playwright, user_credential):
         raise Exception(f"No existing orders found for {user_credential['userEmail']}")
 
     # Login
-    page.goto("https://rahulshettyacademy.com/client")
-    page.locator("#userEmail").fill(user_credential["userEmail"])
-    page.locator("#userPassword").fill(user_credential["password"])
-    page.get_by_role("button", name="login").click()
+    loginPage = LoginPage(page)
+    loginPage.navigation()
+    dashBoard = loginPage.login(userName, userPassword)
 
     # Order History Page -> Order is present
-    page.get_by_role("button", name="ORDERS").click()
-    expect(page.get_by_text("Your Orders")).to_be_visible()
-    print(order_id)
+    orderHistory = dashBoard.selectOrderNavLink()
+    orderDetails = orderHistory.selectOrder(order_id)
+    orderDetails.verifyOrderMessage()
 
-    row = page.locator("tr").filter(has_text=order_id)
-    row.get_by_role("button", name="View").click()
-    expect(page.locator(".tagline")).to_have_text("Thank you for Shopping With Us")
     context.close()
+
+
